@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class MovieService {
 
@@ -18,13 +19,55 @@ public class MovieService {
 
     public void movieRequest(String query) throws SQLException {
         Movie movie = fetchMovie(query);
+        boolean found = true;
         if(movie != null){
             movie.printMovie();
         }else{
             System.out.println("Movie not found");
+            found = false;
         }
         System.out.println("Other recommendations:");
-        List<Movie> movies = recommendationService.fetchRecommendedMovies(movie.getGenre());
+        List<Movie> movies;
+        if(!found){
+            movies = fetchDefaultRecommendations();
+            for(Movie m : movies){
+                m.printMovie();
+            }
+            return;
+        }
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        Callable<List<Movie>> task = () ->
+                recommendationService.fetchRecommendedMovies(movie.getGenre());
+
+        Future<List<Movie>> future = executor.submit(task);
+
+        try {
+            movies = future.get(1500, TimeUnit.MILLISECONDS);
+
+        } catch (TimeoutException e) {
+
+            System.out.println("Recommendation service timeout.");
+            movies = fetchDefaultRecommendations();
+
+        } catch (ExecutionException e) {
+
+            System.out.println("Recommendation service failed.");
+            movies = fetchDefaultRecommendations();
+
+        } catch (InterruptedException e) {
+
+            Thread.currentThread().interrupt();
+            movies = fetchDefaultRecommendations();
+
+        } finally {
+
+            future.cancel(true);
+            executor.shutdown();
+
+        }
+
         for(Movie m : movies){
             m.printMovie();
         }
