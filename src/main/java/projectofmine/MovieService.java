@@ -10,14 +10,23 @@ import java.util.List;
 public class MovieService {
 
     Connection con;
+    RecommendationService recommendationService;
     public MovieService(Connection con) {
         this.con = con;
+        recommendationService = new RecommendationService(con);
     }
 
-    public void movieRequest(String query){
+    public void movieRequest(String query) throws SQLException {
         Movie movie = fetchMovie(query);
         if(movie != null){
             movie.printMovie();
+        }else{
+            System.out.println("Movie not found");
+        }
+        System.out.println("Other recommendations:");
+        List<Movie> movies = recommendationService.fetchRecommendedMovies(movie.getGenre());
+        for(Movie m : movies){
+            m.printMovie();
         }
     }
 
@@ -37,6 +46,24 @@ public class MovieService {
             throw new RuntimeException(e);
         }
         return movie;
+    }
+
+    private List<Movie> fetchDefaultRecommendations(){
+        List<Movie> movies = new ArrayList<>();
+        String query1 = "select * from movies where default_rec = true";
+        try(PreparedStatement ps = con.prepareStatement(query1);) {
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                String title = rs.getString("name");
+                String genre = rs.getString("genre");
+                boolean default_rec = rs.getBoolean("default_rec");
+                movies.add(new Movie(title, genre, default_rec));
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return movies;
     }
 
 }
