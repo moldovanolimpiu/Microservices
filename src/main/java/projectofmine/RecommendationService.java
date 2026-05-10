@@ -16,18 +16,18 @@ public class RecommendationService {
         this.con = con;
     }
 
-    public List<Movie> fetchRecommendedMovies(String queryGenre) throws SQLException, InterruptedException {
+    public List<Movie> fetchRecommendedMovies(String queryGenre, boolean chaos) throws SQLException, InterruptedException {
         List<Movie> movies = new ArrayList<Movie>();
         String sql = "SELECT * FROM movies WHERE genre = ?";
 
         int chance = rand.nextInt(100);
         System.out.println(chance);
 
-        if(chance < 20){
+        if(chance < 20 && chaos) {
             throw new RuntimeException("503 Service Unavailable");
         }
 
-        if(chance < 40){
+        if(chance < 40 && chaos) {
             int delay = 3000 + rand.nextInt(7000);
             Thread.sleep(delay);
         }

@@ -17,8 +17,8 @@ public class APIGateway {
 
     }
 
-    public void APIRequestMovie(String query) throws SQLException {
-        movieService.movieRequest(query);
+    public void APIRequestMovie(String query, boolean chaos) throws SQLException {
+        movieService.movieRequest(query, chaos);
     }
 
 

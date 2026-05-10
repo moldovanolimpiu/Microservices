@@ -8,6 +8,7 @@ public class Main {
 
         Scanner command = new Scanner(System.in);
         APIGateway api = new APIGateway();
+        boolean chaos = false;
 
         System.out.println("Search Movie: ");
         boolean running = true;
@@ -15,7 +16,15 @@ public class Main {
         while(running){
 
             String comm = command.nextLine();
-            api.APIRequestMovie(comm);
+            if(comm.equals("quit")){
+                running = false;
+            }else if(comm.equals("chaos")){
+                chaos = !chaos;
+            }else{
+                api.APIRequestMovie(comm, chaos);
+            }
+
+
         }
         command.close();
     }

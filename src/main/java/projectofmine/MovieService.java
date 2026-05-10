@@ -17,7 +17,7 @@ public class MovieService {
         recommendationService = new RecommendationService(con);
     }
 
-    public void movieRequest(String query) throws SQLException {
+    public void movieRequest(String query, boolean chaos) throws SQLException {
         Movie movie = fetchMovie(query);
         boolean found = true;
         if(movie != null){
@@ -39,7 +39,7 @@ public class MovieService {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         Callable<List<Movie>> task = () ->
-                recommendationService.fetchRecommendedMovies(movie.getGenre());
+                recommendationService.fetchRecommendedMovies(movie.getGenre(), chaos);
 
         Future<List<Movie>> future = executor.submit(task);
 
