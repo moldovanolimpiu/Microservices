@@ -2,9 +2,10 @@ package projectofmine;
 
 import java.sql.SQLException;
 import java.util.Scanner;
+import java.util.concurrent.TimeoutException;
 
 public class Main {
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, TimeoutException {
 
         Scanner command = new Scanner(System.in);
         APIGateway api = new APIGateway();
@@ -20,6 +21,7 @@ public class Main {
                 running = false;
             }else if(comm.equals("chaos")){
                 chaos = !chaos;
+                System.out.println("Chaos mode: " + chaos);
             }else{
                 api.APIRequestMovie(comm, chaos);
             }

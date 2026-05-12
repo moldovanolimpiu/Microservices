@@ -17,64 +17,7 @@ public class MovieService {
         recommendationService = new RecommendationService(con);
     }
 
-    public void movieRequest(String query, boolean chaos) throws SQLException {
-        Movie movie = fetchMovie(query);
-        boolean found = true;
-        if(movie != null){
-            movie.printMovie();
-        }else{
-            System.out.println("Movie not found");
-            found = false;
-        }
-        System.out.println("Other recommendations:");
-        List<Movie> movies;
-        if(!found){
-            movies = recommendationService.fetchDefaultRecommendations();
-            for(Movie m : movies){
-                m.printMovie();
-            }
-            return;
-        }
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-
-        Callable<List<Movie>> task = () ->
-                recommendationService.fetchRecommendedMovies(movie.getGenre(), chaos);
-
-        Future<List<Movie>> future = executor.submit(task);
-
-        try {
-            movies = future.get(1500, TimeUnit.MILLISECONDS);
-
-        } catch (TimeoutException e) {
-
-            System.out.println("Recommendation service timeout.");
-            movies = recommendationService.fetchDefaultRecommendations();
-
-
-        } catch (ExecutionException e) {
-
-            System.out.println("Recommendation service failed.");
-            movies = recommendationService.fetchDefaultRecommendations();
-
-        } catch (InterruptedException e) {
-
-            Thread.currentThread().interrupt();
-            movies = recommendationService.fetchDefaultRecommendations();
-
-        } finally {
-
-            future.cancel(true);
-            executor.shutdown();
-
-        }
-
-        for(Movie m : movies){
-            m.printMovie();
-        }
-    }
-
-    private Movie fetchMovie(String query){
+    public Movie fetchMovie(String query){
         Movie movie = null;
         String query1 = "select * from movies where name like ?";
         try(PreparedStatement ps = con.prepareStatement(query1);) {
@@ -91,6 +34,45 @@ public class MovieService {
         }
         return movie;
     }
+
+    public List<Movie> movieRecommendationRequest(String query, boolean chaos) throws SQLException, TimeoutException {
+        List<Movie> movies = new ArrayList<>();
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        Callable<List<Movie>> task = () ->
+                recommendationService.fetchRecommendedMovies(query, chaos);
+
+        Future<List<Movie>> future = executor.submit(task);
+
+        try {
+            movies = future.get(1500, TimeUnit.MILLISECONDS);
+
+        } catch (TimeoutException e) {
+            throw new TimeoutException("Recommendation Service timed out");
+
+
+        }catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Recommendation Service failed: 503 error", e);
+
+
+        } finally {
+
+            future.cancel(true);
+            executor.shutdown();
+
+        }
+        return movies;
+
+    }
+
+    public List<Movie> fetchDefaultRecommendationRequest() throws SQLException, TimeoutException {
+        return recommendationService.fetchDefaultRecommendations();
+    }
+
+
+
+
 
 
 

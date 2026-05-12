@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 public class RecommendationService {
     private Connection con;
@@ -16,7 +17,7 @@ public class RecommendationService {
         this.con = con;
     }
 
-    public List<Movie> fetchRecommendedMovies(String queryGenre, boolean chaos) throws SQLException, InterruptedException {
+    public List<Movie> fetchRecommendedMovies(String queryGenre, boolean chaos) throws SQLException, InterruptedException, ExecutionException {
         List<Movie> movies = new ArrayList<Movie>();
         String sql = "SELECT * FROM movies WHERE genre = ?";
 
@@ -24,7 +25,7 @@ public class RecommendationService {
         System.out.println(chance);
 
         if(chance < 20 && chaos) {
-            throw new RuntimeException("503 Service Unavailable");
+            throw new ExecutionException(new RuntimeException("503 Not Available"));
         }
 
         if(chance < 40 && chaos) {
