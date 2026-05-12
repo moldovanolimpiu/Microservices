@@ -35,13 +35,13 @@ public class MovieService {
         return movie;
     }
 
-    public List<Movie> movieRecommendationRequest(String query, boolean chaos) throws SQLException, TimeoutException {
+    public List<Movie> movieRecommendationRequest(Movie movie, boolean chaos) throws SQLException, TimeoutException {
         List<Movie> movies = new ArrayList<>();
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         Callable<List<Movie>> task = () ->
-                recommendationService.fetchRecommendedMovies(query, chaos);
+                recommendationService.fetchRecommendedMovies(movie, chaos);
 
         Future<List<Movie>> future = executor.submit(task);
 

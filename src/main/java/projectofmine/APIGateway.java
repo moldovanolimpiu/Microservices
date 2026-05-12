@@ -39,7 +39,7 @@ public class APIGateway {
         movie.printMovie();
         try{
             System.out.println("Similar movies:");
-            recoms = movieService.movieRecommendationRequest(movie.getGenre(), chaos);
+            recoms = movieService.movieRecommendationRequest(movie, chaos);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } catch (TimeoutException | RuntimeException e) {
